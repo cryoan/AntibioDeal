@@ -5,7 +5,7 @@ import math
 import streamlit_mermaid as stmd
 import os
 
-st.title("Antibiotic Dilution Calculator")
+st.title("Calculateur de dilution des antibiotiques")
 
 # Add help icon with SVG diagram
 with st.expander("❓ Comment ça marche?"):
@@ -53,7 +53,7 @@ def load_data():
 antibiotics = load_data()
 
 # Select medication
-molecule = st.selectbox("Molecule name", list(antibiotics.keys()))
+molecule = st.selectbox("Nom de l'antibiotique", list(antibiotics.keys()))
 
 if molecule:
     # Get all available solvents for this molecule
@@ -62,7 +62,7 @@ if molecule:
     # Create solvent selection if multiple variants exist
     if len(variants) > 1:
         solvent_options = [var["solvent"] for var in variants]
-        selected_solvent = st.selectbox("Select solvent", solvent_options)
+        selected_solvent = st.selectbox("Choisir le solvant", solvent_options)
         # Find the selected variant
         data = next(
             var for var in variants if var["solvent"] == selected_solvent)
@@ -71,13 +71,13 @@ if molecule:
         data = variants[0]
 
 # Input total dose per 24h (in grams)
-dose_24h = st.number_input("Total dose per 24h (g)", min_value=0.0, step=0.1)
+dose_24h = st.number_input("Dose totale par 24h (g)", min_value=0.0, step=0.1)
 
-if st.button("Calculate"):
+if st.button("Calculer"):
     if molecule not in antibiotics:
-        st.error("Molecule not found in database.")
+        st.error("Molecule non référencée dans la base de données.")
     elif dose_24h <= 0:
-        st.error("Dose must be greater than 0.")
+        st.error("La dose doit être supérieure à 0.")
     else:
         # 1. Calculate initial number of infusions based on stability
         try:
@@ -140,23 +140,22 @@ if st.button("Calculate"):
             hours_between = 24 / nb_infusion
 
             # Prepare text description of frequency
-            number_text = {1: "once", 2: "twice", 3: "three times",
-                           4: "four times", 6: "six times"}
-            freq_text = f"1 infusion every {int(hours_between)}h, {number_text.get(nb_infusion, str(nb_infusion) + ' times')} per day"
+            number_text = {1: "une fois", 2: "deux fois", 3: "trois fois",
+                           4: "quatre fois", 6: "six fois"}
+            freq_text = f"1 perfusion chaque {int(hours_between)}h, {number_text.get(nb_infusion, str(nb_infusion))} par jour"
 
             # Calculate final dosage per infusion
             dosage_infusion = dose_24h / nb_infusion
 
             # Prepare final message
             result = (
-                f"{molecule}, {dose_24h} g per 24h:\n\n"
-                f"Administration details:\n"
-                f"{dosage_infusion:.2f} g of {molecule}, diluted in {volume_dilution} mL of {data['solvent']}, "
+                f"{molecule}, {dose_24h} g par 24h:\n\n"
+                f"détail de l'administration:\n\n"
+                f"{dosage_infusion:.2f} g de {molecule}, diluée dans {volume_dilution} mL de {data['solvent']}, "
                 f"{freq_text}.\n\n"
-                f"Infusion material: {material}\n\n"
+                f"Matériel de perfusion: {material}\n\n"
                 f"Concentration: {(dosage_infusion * 1000 / volume_dilution):.1f} mg/mL\n\n"
-
-                f"Maximum allowed concentration: {max_val} mg/mL\n"
+                f"Concentration maximale autorisée: {max_val} mg/mL\n"
             )
 
             # Add optimization note if applicable
@@ -169,13 +168,13 @@ if st.button("Calculate"):
 
         st.success(result)
 
-        with st.expander("ℹ️ Additional Information"):
-            st.markdown("##### Stability and Concentration Parameters")
+        with st.expander("ℹ️ Information"):
+            st.markdown("##### Stabilité et Concentration")
             st.caption(f"""
-                • **Stability:** {data['stability']}
-                • **Maximum concentration:** {data['concentration']}
-                • **Comment:** {data['comment']}
-                • **Reference:** {data['reference']}
+                • **Stabilité:** {data['stability']}
+                • **Concentration maximale:** {data['concentration']}
+                • **Commentaire:** {data['comment']}
+                • **Référence:** {data['reference']}
             """)
 
 # Read the Excel file
